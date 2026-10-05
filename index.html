@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f3ed">
+  <title>Conversor de temperatura</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #183b35;
+      --muted: #64736c;
+      --paper: #f4f3ed;
+      --surface: #fffefa;
+      --line: #d8ded5;
+      --green: #245b4b;
+      --green-dark: #194638;
+      --mint: #e6eee6;
+      --coral: #bd6346;
+      --warning: #9b402d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      padding: 40px 20px;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image: repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(36, 91, 75, .045) 32px), repeating-linear-gradient(90deg, transparent, transparent 31px, rgba(36, 91, 75, .045) 32px);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(100%, 900px);
+      margin: 0 auto;
+    }
+
+    .topline {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 18px;
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .mark {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border: 1px solid var(--green);
+      border-radius: 50%;
+      font-family: Georgia, serif;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      max-width: 620px;
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(36px, 7vw, 64px);
+      font-weight: 400;
+      line-height: 1.02;
+    }
+
+    .intro {
+      margin: 14px 0 30px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(260px, .9fr);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: 0 18px 50px rgba(24, 59, 53, .08);
+      animation: arrive .45s ease-out both;
+    }
+
+    .form-panel { padding: 32px; }
+
+    .eyebrow {
+      margin: 0 0 24px;
+      color: var(--coral);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+    }
+
+    label {
+      display: block;
+      margin: 0 0 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    select, input {
+      width: 100%;
+      min-height: 50px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      outline: none;
+      color: var(--ink);
+      background: #fff;
+      font: inherit;
+      font-size: 15px;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(36, 91, 75, .13);
+    }
+
+    .field + .field { margin-top: 20px; }
+
+    .input-wrap { position: relative; }
+
+    .input-wrap input { padding-right: 54px; }
+
+    .unit {
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      transform: translateY(-50%);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 26px;
+    }
+
+    button {
+      min-height: 46px;
+      padding: 0 18px;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      transition: background-color .16s ease, transform .16s ease;
+    }
+
+    button:active { transform: translateY(1px); }
+
+    .submit {
+      flex: 1;
+      color: white;
+      background: var(--green);
+    }
+
+    .submit:hover { background: var(--green-dark); }
+
+    .reset {
+      color: var(--ink);
+      border-color: var(--line);
+      background: transparent;
+    }
+
+    .reset:hover { background: var(--mint); }
+
+    .result-panel {
+      display: flex;
+      min-height: 390px;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 32px;
+      background: var(--mint);
+    }
+
+    .result-label {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .result-value {
+      margin: 20px 0 8px;
+      overflow-wrap: anywhere;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(42px, 7vw, 68px);
+      font-weight: 400;
+      line-height: 1;
+    }
+
+    .result-unit {
+      color: var(--green);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .result-detail {
+      min-height: 22px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .formula {
+      align-self: flex-start;
+      margin-top: 28px;
+      padding: 9px 11px;
+      border-left: 3px solid var(--coral);
+      color: var(--ink);
+      background: rgba(255, 254, 250, .72);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 15px;
+    }
+
+    .error {
+      min-height: 18px;
+      margin: 8px 0 0;
+      color: var(--warning);
+      font-size: 13px;
+    }
+
+    @keyframes arrive {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 680px) {
+      body { padding: 28px 14px; }
+      .intro { margin-bottom: 22px; }
+      .workspace { grid-template-columns: 1fr; }
+      .form-panel, .result-panel { padding: 24px; }
+      .result-panel { min-height: 235px; }
+      .result-value { margin-top: 16px; }
+      .formula { margin-top: 22px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="topline"><span class="mark" aria-hidden="true">T</span> Ferramenta de convers&atilde;o</p>
+    <h1>Conversor de temperatura</h1>
+    <p class="intro">Escolha as escalas, informe a temperatura e veja o resultado.</p>
+
+    <section class="workspace" aria-label="Conversor de temperatura">
+      <form class="form-panel" id="converterForm" novalidate>
+        <p class="eyebrow">Convers&atilde;o</p>
+
+        <div class="field">
+          <label for="conversion">Tipo de convers&atilde;o</label>
+          <select id="conversion" name="conversion">
+            <option value="celsius-fahrenheit">Celsius para Fahrenheit</option>
+            <option value="celsius-kelvin">Celsius para Kelvin</option>
+            <option value="fahrenheit-celsius">Fahrenheit para Celsius</option>
+            <option value="fahrenheit-kelvin">Fahrenheit para Kelvin</option>
+            <option value="kelvin-celsius">Kelvin para Celsius</option>
+            <option value="kelvin-fahrenheit">Kelvin para Fahrenheit</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="temperature">Temperatura</label>
+          <div class="input-wrap">
+            <input id="temperature" name="temperature" type="number" step="any" inputmode="decimal" placeholder="Ex.: 25" autocomplete="off">
+            <span class="unit" id="sourceUnit">C</span>
+          </div>
+          <p class="error" id="errorMessage" role="alert"></p>
+        </div>
+
+        <div class="actions">
+          <button class="submit" type="submit">Converter</button>
+          <button class="reset" id="clearButton" type="reset">Limpar</button>
+        </div>
+      </form>
+
+      <aside class="result-panel" aria-live="polite" aria-atomic="true">
+        <div>
+          <p class="result-label">Resultado</p>
+          <p class="result-value"><span id="resultValue">--</span> <span class="result-unit" id="resultUnit">K</span></p>
+          <p class="result-detail" id="resultDetail">O valor convertido aparecer&aacute; aqui.</p>
+        </div>
+        <div class="formula" id="formula">F = (C x 9/5) + 32</div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const conversions = {
+      "celsius-fahrenheit": {
+        source: "C", destination: "F", formula: "F = (C x 9/5) + 32",
+        convert: (temperature) => temperature * 9 / 5 + 32,
+      },
+      "celsius-kelvin": {
+        source: "C", destination: "K", formula: "K = C + 273,15",
+        convert: (temperature) => temperature + 273.15,
+      },
+      "fahrenheit-celsius": {
+        source: "F", destination: "C", formula: "C = (F - 32) x 5/9",
+        convert: (temperature) => (temperature - 32) * 5 / 9,
+      },
+      "fahrenheit-kelvin": {
+        source: "F", destination: "K", formula: "K = (F - 32) x 5/9 + 273,15",
+        convert: (temperature) => (temperature - 32) * 5 / 9 + 273.15,
+      },
+      "kelvin-celsius": {
+        source: "K", destination: "C", formula: "C = K - 273,15",
+        convert: (temperature) => temperature - 273.15,
+      },
+      "kelvin-fahrenheit": {
+        source: "K", destination: "F", formula: "F = (K - 273,15) x 9/5 + 32",
+        convert: (temperature) => (temperature - 273.15) * 9 / 5 + 32,
+      },
+    };
+
+    const form = document.querySelector("#converterForm");
+    const conversionSelect = document.querySelector("#conversion");
+    const temperatureInput = document.querySelector("#temperature");
+    const sourceUnit = document.querySelector("#sourceUnit");
+    const resultUnit = document.querySelector("#resultUnit");
+    const resultValue = document.querySelector("#resultValue");
+    const resultDetail = document.querySelector("#resultDetail");
+    const formula = document.querySelector("#formula");
+    const errorMessage = document.querySelector("#errorMessage");
+
+    function updateConversionDetails() {
+      const conversion = conversions[conversionSelect.value];
+      sourceUnit.textContent = conversion.source;
+      resultUnit.textContent = conversion.destination;
+      formula.textContent = conversion.formula;
+      errorMessage.textContent = "";
+    }
+
+    conversionSelect.addEventListener("change", updateConversionDetails);
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const temperature = Number(temperatureInput.value);
+
+      if (temperatureInput.value.trim() === "" || !Number.isFinite(temperature)) {
+        errorMessage.textContent = "Digite uma temperatura num\u00e9rica v\u00e1lida.";
+        temperatureInput.focus();
+        return;
+      }
+
+      const conversion = conversions[conversionSelect.value];
+      const converted = conversion.convert(temperature);
+      const formatted = new Intl.NumberFormat("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(converted);
+
+      resultValue.textContent = formatted;
+      resultUnit.textContent = conversion.destination;
+      resultDetail.textContent = `${temperatureInput.value} ${conversion.source} convertido para ${conversion.destination}.`;
+      errorMessage.textContent = "";
+    });
+
+    form.addEventListener("reset", () => {
+      window.requestAnimationFrame(() => {
+        resultValue.textContent = "--";
+        resultDetail.textContent = "O valor convertido aparecer\u00e1 aqui.";
+        errorMessage.textContent = "";
+        updateConversionDetails();
+      });
+    });
+
+    updateConversionDetails();
+  </script>
+</body>
+</html>
